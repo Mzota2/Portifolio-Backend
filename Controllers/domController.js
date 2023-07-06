@@ -12,7 +12,7 @@ const { error } = require('console');
 
 //storage location
 const Storage = multer.diskStorage({
-    destination:'../Frontend/admin/src/uploads',
+    destination:'uploads',
     filename:(req, file, callback)=>{
         callback(null, Date.now() +'-'+ file.originalname)
     }
