@@ -12,6 +12,9 @@ const homeSchema = new Schema({
     },
     backgroundImage:{
         type:Array
+    },
+    storedImages:{
+        type:Array
     }
 });
 

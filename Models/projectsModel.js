@@ -12,8 +12,12 @@ const projectSchema = new Schema({
 
     project_image:{
         type:String,
-       
+    },
+
+    storedImage:{
+        type:String
     }
+
 });
 
 

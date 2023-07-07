@@ -17,6 +17,10 @@ const aboutSchema = new Schema({
         type:String
     },
 
+    storedImage:{
+        type:String
+    }
+
 });
 
 

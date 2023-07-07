@@ -38,7 +38,8 @@ const createHome = async(req, res)=>{
                     const newHome = await Home.create({
                         hello:hello,
                         description:description,
-                        backgroundImage:filesArray
+                        backgroundImage:filesArray,
+                        storedImages:filesArray
                     }).then(()=>{
                         res.json({message:'Home created successfully'});
                     }).catch((error)=>{
@@ -61,24 +62,55 @@ const createHome = async(req, res)=>{
     
 }
 
+function storePreviousImages(imagesArray){
+    if(!imagesArray.length > 6){
+        return imagesArray
+    }
+    else{
+        const newArray = imagesArray.filter((value)=>{
+            return imagesArray.indexOf(value) > imagesArray.length-4;
+        });
+        return newArray
+    }
+}
+
+
 const updateHome = async(req, res)=>{
     try {
         const {id}= req.params;
         
         upload(req, res, async(err)=>{
-            const {hello, backgroundImage, description} = req.body;
+            const {hello,description} = req.body;
             if(err){
                 console.log(err);
             }
             else{
                 const {files} = req;
+                const existingHome = await Home.findById({_id:id}, {new:false});
+                const storedImages = existingHome.storedImages;
                 const filesArray = files.map((file)=> file.path);
+    
+                if(filesArray.length == 0){
+                    const updateHome = await Home.findOneAndUpdate({_id:id}, {
+                        hello:hello,
+                        backgroundImage:storedImages,
+                        description:description,
+                    })
+                    res.json({message:'updated successfully', updateHome:updateHome});
+                }
+               else {
                 const updateHome = await Home.findOneAndUpdate({_id:id}, {
                     hello:hello,
                     backgroundImage:filesArray,
-                    description:description
+                    description:description,
+                    storedImages:storePreviousImages(storedImages.concat(filesArray))
+                    
                 })
                 res.json({message:'updated successfully', updateHome:updateHome});
+               }
+                
+                
+               
             }
         })
        
@@ -137,7 +169,8 @@ const createAbout = async(req, res)=>{
                     about_title:about_title,
                     about_description:about_description,
                     about_skills:about_skills,
-                    about_image:req.file.path
+                    about_image:req.file.path,
+                    storedImage:req.file.path
         
                 });
                 res.json({message:'About created successfully'});
@@ -165,13 +198,29 @@ const updateAbout = async(req, res)=>{
             if(err){
                 console.log(err);
             }else{
-                const updateAbout = await About.findOneAndUpdate({_id:id}, {
-                    about_title:about_title,
-                    about_description:about_description,
-                    about_skills:about_skills,
-                    about_image:req.file.path
-                })
-                res.json({message:'updated successfully', updateAbout:updateAbout});
+
+                if(!req.file){
+                    const existingAbout = await About.findById({_id:id});
+                    const storedImage = existingAbout.storedImage;
+                    const updateAbout = await About.findOneAndUpdate({_id:id}, {
+                        about_title:about_title,
+                        about_description:about_description,
+                        about_skills:about_skills,
+                        about_image:storedImage
+                    })
+                    res.json({message:'updated successfully', updateAbout:updateAbout});
+                }
+                else{
+                    const updateAbout = await About.findOneAndUpdate({_id:id}, {
+                        about_title:about_title,
+                        about_description:about_description,
+                        about_skills:about_skills,
+                        about_image:req.file.path,
+                        storedImage:req.file.path
+                    })
+                    res.json({message:'updated successfully', updateAbout:updateAbout});
+                }
+                
             }
         })
     
@@ -296,6 +345,7 @@ const createProject = async(req, res)=>{
                 const newProject = await Project.create({
                     project_title:project_title,
                     project_image:req.file.path,
+                    storedImage:req.file.path,
                     project_link:project_link
                 });
                 res.json({message:'Project created successfully'});
@@ -319,12 +369,27 @@ const updateProject = async(req, res)=>{
             if(err){
                 console.log(err)
             }else{
-                const updateProject = await Project.findOneAndUpdate({_id:id}, {
-                    project_image:req.file.path,
-                    project_link:project_link,
-                    project_title:project_title
-                })
-                res.json({message:'updated successfully', updateProject:updateProject});
+                const existingProject = await Project.findById({_id:id});
+                const storedImage = existingProject.storedImage;
+
+                if(!req.file){
+                    const updateProject = await Project.findOneAndUpdate({_id:id}, {
+                        project_image:storedImage,
+                        project_link:project_link,
+                        project_title:project_title
+                    })
+                    res.json({message:'updated successfully', updateProject:updateProject});
+                }
+                else{
+                    const updateProject = await Project.findOneAndUpdate({_id:id}, {
+                        project_image:req.file.path,
+                        project_link:project_link,
+                        storedImage:req.file.path,
+                        project_title:project_title
+                    })
+                    res.json({message:'updated successfully', updateProject:updateProject});
+                }
+                
             }
            
         })
